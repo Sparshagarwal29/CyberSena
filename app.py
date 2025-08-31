@@ -18,6 +18,9 @@ from model import GAT
 from dataset import AMLtoGraph
 import torch_geometric.transforms as T
 
+import matplotlib
+matplotlib.use('Agg')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 app.config['UPLOAD_FOLDER'] = 'uploads'

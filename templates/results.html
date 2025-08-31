@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Analysis Results
+                    </h2>
+                    {% if demo_mode %}
+                    <span class="badge bg-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Demo Mode
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-list-ol fa-2x mb-2"></i>
+                                <h4>{{ total_transactions }}</h4>
+                                <p class="mb-0">Total Transactions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h4>{{ normal_count }}</h4>
+                                <p class="mb-0">Normal</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <h4>{{ suspicious_count }}</h4>
+                                <p class="mb-0">Suspicious</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-percentage fa-2x mb-2"></i>
+                                <h4>{{ "%.1f"|format(suspicious_percentage) }}%</h4>
+                                <p class="mb-0">Risk Level</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                {% if plot_url %}
+                <div class="text-center mb-4">
+                    <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid" alt="Prediction Visualization">
+                </div>
+                {% endif %}
+
+                <!-- Sample Data -->
+                {% if sample_data %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-table me-2"></i>Sample Predictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        {% for key in sample_data[0].keys() %}
+                                        <th>{{ key }}</th>
+                                        {% endfor %}
+                                        <th>Risk Score</th>
+                                        <th>Prediction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in range(sample_data|length) %}
+                                    <tr>
+                                        {% for key, value in sample_data[i].items() %}
+                                        <td>{{ value }}</td>
+                                        {% endfor %}
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if probabilities[i] > 0.5 %}bg-danger{% else %}bg-success{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ (probabilities[i] * 100)|round(1) }}%">
+                                                    {{ (probabilities[i] * 100)|round(1) }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if predictions[i] == 1 %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Suspicious
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Normal
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    <a href="/" class="btn btn-custom me-2">
+                        <i class="fas fa-upload me-2"></i>Analyze Another File
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="downloadResults()">
+                        <i class="fas fa-download me-2"></i>Export Results
+                    </button>
+                </div>
+
+                {% if error_message %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadResults() {
+    const results = {
+        total_transactions: {{ total_transactions }},
+        suspicious_count: {{ suspicious_count }},
+        normal_count: {{ normal_count }},
+        suspicious_percentage: {{ suspicious_percentage }},
+        predictions: {{ predictions|tojson }},
+        probabilities: {{ probabilities|tojson }}
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "aml_analysis_results.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+</script>
+{% endblock %}{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Analysis Results
+                    </h2>
+                    {% if demo_mode %}
+                    <span class="badge bg-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Demo Mode
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-list-ol fa-2x mb-2"></i>
+                                <h4>{{ total_transactions }}</h4>
+                                <p class="mb-0">Total Transactions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h4>{{ normal_count }}</h4>
+                                <p class="mb-0">Normal</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <h4>{{ suspicious_count }}</h4>
+                                <p class="mb-0">Suspicious</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-percentage fa-2x mb-2"></i>
+                                <h4>{{ "%.1f"|format(suspicious_percentage) }}%</h4>
+                                <p class="mb-0">Risk Level</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                {% if plot_url %}
+                <div class="text-center mb-4">
+                    <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid" alt="Prediction Visualization">
+                </div>
+                {% endif %}
+
+                <!-- Sample Data -->
+                {% if sample_data %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-table me-2"></i>Sample Predictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        {% for key in sample_data[0].keys() %}
+                                        <th>{{ key }}</th>
+                                        {% endfor %}
+                                        <th>Risk Score</th>
+                                        <th>Prediction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in range(sample_data|length) %}
+                                    <tr>
+                                        {% for key, value in sample_data[i].items() %}
+                                        <td>{{ value }}</td>
+                                        {% endfor %}
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if probabilities[i] > 0.5 %}bg-danger{% else %}bg-success{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ (probabilities[i] * 100)|round(1) }}%">
+                                                    {{ (probabilities[i] * 100)|round(1) }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if predictions[i] == 1 %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Suspicious
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Normal
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    <a href="/" class="btn btn-custom me-2">
+                        <i class="fas fa-upload me-2"></i>Analyze Another File
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="downloadResults()">
+                        <i class="fas fa-download me-2"></i>Export Results
+                    </button>
+                </div>
+
+                {% if error_message %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ error_message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadResults() {
+    const results = {
+        total_transactions: {{ total_transactions }},
+        suspicious_count: {{ suspicious_count }},
+        normal_count: {{ normal_count }},
+        suspicious_percentage: {{ suspicious_percentage }},
+        predictions: {{ predictions|tojson }},
+        probabilities: {{ probabilities|tojson }}
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "aml_analysis_results.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+</script>
+{% endblock %}

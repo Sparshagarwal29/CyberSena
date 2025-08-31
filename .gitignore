@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Data files (usually too large for Git)
+data/
+*.csv
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.parquet
+raw/
+processed/
+
+
+# uploads 
+uploads/
+
+# Model files (can be large)
+*.pth
+*.pt
+*.model
+*.weights
+*.ckpt
+models/
+checkpoints/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+
+# Logs
+*.log
+logs/
+wandb/
+
+# Cache
+.cache/
+.pytest_cache/
+
+# GPU/CUDA
+*.cu
+*.cuh
+
+# Large files that shouldn't be in Git
+*.zip
+*.tar.gz
+*.rar
+
+*best_model.pth
+*money-laundering-edit.ipynb
